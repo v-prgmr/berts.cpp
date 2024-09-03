@@ -16,6 +16,8 @@
 #include <algorithm>
 #include <iomanip>
 #include <limits>
+#include <string>
+#include <sstream>
 
 namespace bert {
 
