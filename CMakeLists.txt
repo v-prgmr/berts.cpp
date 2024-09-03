@@ -154,10 +154,16 @@ endif()
 if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
     message(STATUS "ARM detected")
     if (MSVC)
-        # TODO: arm msvc?
+       # added compile options for aarch64 to build using Android NDK
     else()
-        if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
-            add_compile_options(-mcpu=native)
+        if (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+            message(STATUS "Configuring for Android ARM")
+            # Do not use -mcpu=native for Android
+            if (BERTS_NATIVE)
+                add_compile_options(-march=armv8-a)
+            endif()
+        elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
+            add_compile_options(-mcpu=cortex-a53)
         endif()
         # TODO: armv6,7,8 version specific flags
     endif()
