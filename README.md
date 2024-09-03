@@ -1,9 +1,25 @@
-# berts.cpp
-
-基于 [ggml](https://github.com/ggerganov/ggml) 的 bert 模型家族推理服务，支持分类模型、seq2seq 文本生成模型等等.
+# berts.cpp on Android
 
 [ggml](https://github.com/ggerganov/ggml) inference of bert family models (bert, distilbert, roberta ...), classification & seq2seq and more.
 High quality bert inference in pure C++.
+
+## Motivation for BERT model on android 
+### Why use berts.cpp instead of llama.cpp (or) bert.cpp?
+ 
+* [llama.cpp](https://github.com/ggerganov/llama.cpp) and [bert.cpp](https://github.com/skeskinen/bert.cpp/) does not 
+ have support for BertForSequenceClassification architecture. 
+* Even though [bert.cpp](https://github.com/skeskinen/bert.cpp/) is integrated into llama.cpp →
+https://github.com/ggerganov/llama.cpp/pull/5423, they only support BertEmbedding models like all-MiniLM-L6-v2. 
+* And [bert.cpp](https://github.com/skeskinen/bert.cpp/) inference code needs to be refactored for making it work 
+with SequenceClassification model architecture like mentioned by the author here in https://github.com/skeskinen/bert.cpp/issues/11 
+which seems to be tedious and also the OP claims that they have tried using available operator set from GGML library and experiences 
+ erroneous/ unexpected output.
+
+Thanks to [yilong2001/berts.cpp](https://github.com/yilong2001/berts.cpp) which is an implementation that does sequence 
+classification in pure C++, modify the CMakeLists.txt with missing compiler options for aarch64, we can build the project 
+for android armv8-a using [Android NDK r25](https://developer.android.com/ndk/downloads/revision_history). 
+
+To run bertsbase.cpp on an embedded android platform, follow the instructions under `Build for Android` section.
 
 ## Description
 The main goal of `berts.cpp` is to run the BERT model with simple binary on CPU
@@ -16,6 +32,8 @@ The main goal of `berts.cpp` is to run the BERT model with simple binary on CPU
 * Benchmarks to validate correctness and speed of inference
 
 ## Limitations & TODO
+* Add classification string as an argument that can be passed from commandline
+* Implement argmax of inference output to find the index that corresponds to the class
 * bert seq2seq
 * bard 
 * xlnet
@@ -50,6 +68,29 @@ To build the library or binary, need install external library
 # export CPLUS_INCLUDE_PATH=/usr/local/include/oatpp-1.3.0/oatpp:$CPLUS_INCLUDE_PATH
 
 ```
+### Build for Android
+
+* You can use your own custom finetuned BERT model for classifying a sentence.
+* First convert your finetuned BERT model following the instructions under `Converting models to ggml format` section.
+* Replace the string in line 41 of bert-main.cpp with your string that has to be classified. (This can be set as a
+cmd line argument in the future) 
+* To compile bert-main.cpp for android,
+
+```
+mkdir build_android
+cd build_android
+export NDK=~/Android/Sdk/ndk/25.1.8937393 # locate your local NDK installation directory
+cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-23 -DCMAKE_C_FLAGS=-march=armv8.4a+dotprod .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release ..
+make
+```
+* This should create the `bert-main` inside the build folder.
+* Now to classify using your BERT model, copy the binary file and the BERT model to your android device and run
+
+```commandline
+bert-main -m your_BERT_model.bin
+```
+* This returns a tensor which corresponds to the probabilities of all the classes that your model was trained to classify.
+* Taking argmax of this tensor should return the indices of your class. (could be implemented in the future)
 
 ### Build
 To build the dynamic library for usage from e.g. Golang:
