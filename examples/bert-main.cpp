@@ -38,7 +38,7 @@ int main(int argc, char ** argv) {
     int N = bert::bert_n_max_tokens(ctx);
     // tokenize the prompt
     std::vector<std::string> token_chars;
-    ctx->tokenizer->tokenize("分类问题...", &token_chars, N-2);
+    ctx->tokenizer->tokenize("navigate me to starbucks", &token_chars, N-2);
     printf("%s: number of tokens in prompt = %zu\n", __func__, token_chars.size());
 
     int batch_num = 1;
