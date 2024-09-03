@@ -124,7 +124,7 @@ void run(bert::BertBaseCtx *_bctx, bert::BertParams *_params) {
   router->addController(myCtrl);
 
   auto connectionHandler = oatpp::web::server::HttpConnectionHandler::createShared(router);
-  auto connectionProvider = oatpp::network::tcp::server::ConnectionProvider::createShared({"localhost", _params->port, oatpp::network::Address::IP_4});
+  auto connectionProvider = oatpp::network::tcp::server::ConnectionProvider::createShared({"localhost", static_cast<v_uint16>(_params->port), oatpp::network::Address::IP_4});
 
   /* create server */
   oatpp::network::Server server(connectionProvider, connectionHandler);
